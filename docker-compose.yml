@@ -1,0 +1,63 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    container_name: cinlok-db
+    restart: always
+    environment:
+      # DB_HOST: localhost
+      # DB_PORT: 5432
+      DB_USER: cinlok
+      DB_PASSWORD: cinlokpassword
+      DB_NAME: cinlokdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./migrations:/migrations
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      retries: 5
+
+  api:
+    build: .
+    container_name: cinlok-api
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+    command: ["./api"]
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+
+  migrate:
+    image: migrate/migrate:latest
+    container_name: ecom-migrate
+    volumes:
+      - ./migrations:/migrations
+    entrypoint: ["/bin/sh", "-c"]
+    command: migrate -path=/migrations -database "${DATABASE_URL}" up || true
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db-data:
