@@ -1,26 +1,29 @@
 package config
 
 import (
-	"log"
+	"fmt"
 	"os"
-	"strconv"
 
 	"github.com/joho/godotenv"
 )
 
 type Config struct {
 	Database DatabaseConfig
+	JWT      JWTConfig
 	Server   ServerConfig
-	Log      LogConfig
 }
 
 type DatabaseConfig struct {
-	Host     string
-	Port     int
-	User     string
-	Password string
-	DbName   string
-	SSLMode  string
+	Host       string
+	Port       string
+	DbUser     string
+	DbPassword string
+	DbName     string
+	SSLMode    string
+}
+
+type JWTConfig struct {
+	Secret string
 }
 
 type ServerConfig struct {
@@ -28,37 +31,37 @@ type ServerConfig struct {
 	Port string
 }
 
-type LogConfig struct {
-	Level string
-}
-
-func Load() *Config {
+func Load() (*Config, error) {
 	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found, using environment variable")
+		fmt.Println("No .env file found, using environment variable")
 	}
 
-	port, err := strconv.Atoi(getEnv("DB_PORT", "5432"))
-	if err != nil {
-		port = 5432
-	}
-
-	return &Config{
+	config := &Config{
 		Database: DatabaseConfig{
-			Host:     getEnv("DB_HOST", "localhost"),
-			Port:     port,
-			User:     getEnv("DB_USER", "postgres"),
-			Password: getEnv("DB_PASSWORD", "postgres"),
-			DbName:   getEnv("DB_NAME", "cinlokdb"),
-			SSLMode:  getEnv("DB_SSLMODE", "disable"),
+			Host:       getEnv("DB_HOST", "localhost"),
+			Port:       getEnv("DB_PORT", "5432"),
+			DbUser:     getEnv("DB_USER", "postgres"),
+			DbPassword: getEnv("DB_PASSWORD", "postgres"),
+			DbName:     getEnv("DB_NAME", "cinlokdb"),
+			SSLMode:    getEnv("DB_SSLMODE", "disable"),
+		},
+		JWT: JWTConfig{
+			Secret: getEnv("JWT_SECRET", ""),
 		},
 		Server: ServerConfig{
 			Host: getEnv("SERVER_HOST", "0.0.0.0"),
 			Port: getEnv("SERVER_PORT", "8080"),
 		},
-		Log: LogConfig{
-			Level: getEnv("LOG_LEVEL", "info"),
-		},
 	}
+
+	return config, nil
+}
+
+func (c *DatabaseConfig) ConnectionString() string {
+	return fmt.Sprintf(
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+		c.Host, c.Port, c.DbUser, c.DbPassword, c.DbName, c.SSLMode,
+	)
 }
 
 func getEnv(key, defaultValue string) string {
