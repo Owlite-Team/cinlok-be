@@ -6,18 +6,16 @@ services:
     container_name: cinlok-db
     restart: always
     environment:
-      # DB_HOST: localhost
-      # DB_PORT: 5432
-      DB_USER: cinlok
-      DB_PASSWORD: cinlokpassword
-      DB_NAME: cinlokdb
+      POSTGRES_USER: cinlok
+      POSTGRES_PASSWORD: cinlokpassword
+      POSTGRES_DB: cinlokdb
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
       - ./migrations:/migrations
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U cinlok -d cinlokdb"]
       interval: 5s
       retries: 5
 
