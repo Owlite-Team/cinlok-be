@@ -36,6 +36,7 @@ type RegisterRequest struct {
 	Password string `json:"password"`
 	Name     string `json:"name"`
 	Phone    string `json:"phone"`
+	Avatar   string `json:"avatar"`
 }
 
 type LoginRequest struct {
@@ -80,7 +81,8 @@ func (uc *AuthUseCase) Register(ctx context.Context, req RegisterRequest) (*Auth
 		Password:  string(hashedPassword),
 		Name:      req.Name,
 		Phone:     req.Phone,
-		Role:      string(entity.RoleUser),
+		Role:      string(entity.RoleBuyer),
+		Avatar:    req.Avatar,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}

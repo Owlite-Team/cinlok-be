@@ -9,9 +9,9 @@ import (
 type Role string
 
 const (
-	RoleAdmin Role = "admin"
-	RoleUser  Role = "user"
-	RoleGuest Role = "guest" // TODO: check if this is used
+	RoleSeller Role = "seller"
+	RoleBuyer  Role = "buyer"
+	RoleGuest  Role = "guest"
 )
 
 type User struct {
@@ -21,6 +21,7 @@ type User struct {
 	Name      string    `json:"name"`
 	Phone     string    `json:"phone"`
 	Role      string    `json:"role"`
+	Avatar    string    `json:"avatar"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
