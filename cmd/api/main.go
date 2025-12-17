@@ -57,13 +57,14 @@ func main() {
 	}
 
 	// Init repositories
+	refreshTokenRepo := infraRepo.NewRefreshTokenRepository(db.DB)
 	userRepo := infraRepo.NewUserRepository(db.DB)
 
 	// Init usecase
-	authUseCase := usecase.NewAuthUseCase(userRepo, []byte(cfg.JWT.Secret), zapLogger)
+	authUC := usecase.NewAuthUseCase(userRepo, refreshTokenRepo, []byte(cfg.JWT.Secret), zapLogger)
 
 	// Init handlers
-	authHandler := httpHandler.NewAuthHandler(authUseCase)
+	authHandler := httpHandler.NewAuthHandler(authUC)
 
 	// Setup Gin
 	gin.SetMode(gin.ReleaseMode)
@@ -86,7 +87,15 @@ func main() {
 		{
 			auth.POST("/register", authHandler.Register)
 			auth.POST("/login", authHandler.Login)
+			auth.POST("/refresh-token", authHandler.RefreshToken)
+			auth.POST("/logout", authHandler.Logout)
 		}
+	}
+
+	protected := v1.Group("")
+	protected.Use(middleware.AuthMiddleware(authUC))
+	{
+		protected.POST("auth/logout-all", authHandler.LogoutAllDevices)
 	}
 
 	// Start server

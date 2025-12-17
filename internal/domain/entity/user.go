@@ -9,12 +9,12 @@ import (
 type Role string
 
 const (
-	RoleAdmin Role = "admin"
-	RoleUser  Role = "user"
-	RoleGuest Role = "guest" // TODO: check if this is used
+	RoleSeller Role = "seller"
+	RoleBuyer  Role = "buyer"
+	RoleGuest  Role = "guest"
 )
 
-type User struct {
+type User struct { // TODO: add avatar, DOB
 	ID        string    `json:"id"`
 	Email     string    `json:"email"`
 	Password  string    `json:"-"`
